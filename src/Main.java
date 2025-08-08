@@ -1,17 +1,26 @@
+import service.InMemoryHistoryManager;
+import service.InMemoryTaskManager;
+import utils.Managers;
+
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        InMemoryTaskManager taskManager = Managers.getDefault();
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
 
+        String savePath = "C:\\Users\\Lenovo\\Desktop\\Java\\JavaProjects\\task_tracker\\src\\save.csv";
+        InMemoryTaskManager taskManager = Managers.loadFromFile(savePath);
+        System.out.println("Сохранение успешно загружено!\n");
+
+        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
         System.out.println("Трекер задач");
+
         while (true) {
+            taskManager.returnId();
             taskManager.epicStatusCheck();
             taskManager.showFunctions();
-            String command = scanner.next();
-            switch (command) {
+            switch (scanner.next()) {
                 case "1":
                     taskManager.displayTasks();
                     break;
@@ -41,7 +50,6 @@ public class Main {
                     return;
                 default:
                     System.out.println("Такая команда отсутствует!");
-                    break;
             }
         }
     }

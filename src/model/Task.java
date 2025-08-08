@@ -1,8 +1,10 @@
+package model;
+
 public class Task {
-    protected int id;
-    protected String name;
-    protected String description;
-    protected Status status;
+    public int id;
+    public String name;
+    public String description;
+    public Status status;
 
     public Task(int id, String name, String description, Status status) {
         this.id = id;
@@ -18,5 +20,9 @@ public class Task {
     public void setStatus(Status status, String taskType) {
         this.status = status;
         System.out.println("Cтатуc " + taskType + " обновлён!");
+    }
+
+    public String toString() {
+        return name + "," + status + "," + description;
     }
 }
