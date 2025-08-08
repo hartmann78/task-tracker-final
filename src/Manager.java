@@ -92,31 +92,31 @@ public class Manager {
             System.out.println("Что вы хотите создать?");
             System.out.println("1 - задача");
             System.out.println("2 - эпик");
-            String command = scanner.next();
+            String command = scanner.nextLine();
             switch (command) {
                 case ("1"):
                     System.out.println("Введите название задачи:");
-                    String taskName = scanner.next();
+                    String taskName = scanner.nextLine();
                     System.out.println("Введите описание задачи:");
-                    String taskDescription = scanner.next();
-                    taskList.put(id++, new Task(taskName, taskDescription, Status.NEW));
+                    String taskDescription = scanner.nextLine();
+                    taskList.put(id++, new Task(id, taskName, taskDescription, Status.NEW));
                     return;
                 case ("2"):
                     System.out.println("Введите название эпика:");
-                    String epicName = scanner.next();
+                    String epicName = scanner.nextLine();
                     System.out.println("Введите описание эпика:");
-                    String epicDescription = scanner.next();
-                    Epic newEpic = new Epic(epicName, epicDescription, Status.NEW);
+                    String epicDescription = scanner.nextLine();
+                    Epic newEpic = new Epic(id, epicName, epicDescription, Status.NEW);
 
                     System.out.println("Сколько подзадач вы желаете добавить?");
                     int subtasks = scanner.nextInt();
                     for (int i = 0; i < subtasks; i++) {
                         System.out.println("Подзадача " + (i + 1));
                         System.out.println("Введите название подзадачи:");
-                        String subtaskName = scanner.next();
+                        String subtaskName = scanner.nextLine();
                         System.out.println("Введите описание подзадачи:");
-                        String subtaskDescription = scanner.next();
-                        newEpic.subtasks.put(subTaskId++, new Subtask(subtaskName, subtaskDescription, Status.NEW));
+                        String subtaskDescription = scanner.nextLine();
+                        newEpic.subtasks.put(subTaskId++, new Subtask(id, subtaskName, subtaskDescription, Status.NEW));
                     }
                     subTaskId = 1;
                     taskList.put(id++, newEpic);
@@ -165,7 +165,8 @@ public class Manager {
             System.out.println("1 - Новый");
             System.out.println("2 - В процессе");
             System.out.println("3 - Выполнен");
-            String newStatus = scanner.next();
+            String newStatus = scanner.nextLine(); // Во время работы компилятор почему-то игноирует её
+            newStatus = scanner.nextLine();
             switch (newStatus) {
                 case ("1"):
                     updateId.setStatus(Status.NEW);
