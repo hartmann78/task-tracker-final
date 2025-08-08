@@ -1,10 +1,25 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.Scanner;
 
 public class InMemoryTaskManager implements TaskManager {
     int id = 0;
     Scanner scanner = new Scanner(System.in);
     HashMap<Integer, Task> taskList = new HashMap<>();
     InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
+
+    @Override
+    public void showFunctions() {
+        System.out.println("Выберите функцию:");
+        System.out.println("1 - получение списка задач");
+        System.out.println("2 - удаление всех задач");
+        System.out.println("3 - получение по идентификатору");
+        System.out.println("4 - создание задач");
+        System.out.println("5 - обновление данных");
+        System.out.println("6 - обновление статуса");
+        System.out.println("7 - удаление по идентификатору");
+        System.out.println("8 - история просмотров задач");
+        System.out.println("9 - завершить работу");
+    }
 
     // обновление статуса эпика
     @Override
@@ -32,22 +47,13 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    // проверяет отсутствуют ли задачи
+    // проверяет, отсутствуют ли задачи
     public Boolean isEmptyCheck() {
         if (taskList.isEmpty()) {
             System.out.println("Список задач пуст!");
             return true;
         }
         return false;
-    }
-
-    // отображает задачу
-    public Task displaySingleTask(Task task, String type, String blank) {
-        System.out.println(blank + "Id " + type + ": " + task.id);
-        System.out.println(blank + "Название " + type + ": " + task.name);
-        System.out.println(blank + "Описание " + type + ": " + task.description);
-        System.out.println(blank + "Статус " + type + ": " + task.status);
-        return task;
     }
 
     // выбор задачи
@@ -66,8 +72,8 @@ public class InMemoryTaskManager implements TaskManager {
                         return epic.subtasks.get(id);
                     }
                 }
-                System.out.println("Неверный идентификатор!");
             }
+            System.out.println("Неверный идентификатор!");
         }
     }
 
@@ -82,31 +88,29 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    @Override
-    public void showFunctions() {
-        System.out.println("Трекер задач");
-        System.out.println("Выберите функцию:");
-        System.out.println("1 - получение списка задач");
-        System.out.println("2 - удаление всех задач");
-        System.out.println("3 - получение по индентификатору");
-        System.out.println("4 - создание задач");
-        System.out.println("5 - обновление данных");
-        System.out.println("6 - обновление статуса");
-        System.out.println("7 - удаление по индентификатору");
-        System.out.println("8 - история просмотров задач");
-        System.out.println("9 - завершить работу");
-    }
-
     // Функция 1
     @Override
     public void displayTasks() {
         if (isEmptyCheck()) return;
         for (Integer key : taskList.keySet()) {
-            if (displaySingleTask(taskList.get(key), typeChecker(taskList.get(key)), "") instanceof Epic epic)
+            Task task = taskList.get(key);
+            String taskType = typeChecker(task);
+            if (displayAndGetTask(task, taskType, false) instanceof Epic epic)
                 for (int subTaskKey : epic.subtasks.keySet()) {
-                    displaySingleTask(epic.subtasks.get(subTaskKey), "подзадачи", "    ");
+                    Subtask subtask = epic.subtasks.get(subTaskKey);
+                    displayAndGetTask(subtask, "подзадачи", true);
                 }
         }
+    }
+
+    // отображает задачу
+    public Task displayAndGetTask(Task task, String type, boolean isBlank) {
+        String blank = (isBlank) ? "    " : "";
+        System.out.println(blank + "Id " + type + ": " + task.id);
+        System.out.println(blank + "Название " + type + ": " + task.name);
+        System.out.println(blank + "Описание " + type + ": " + task.description);
+        System.out.println(blank + "Статус " + type + ": " + task.status);
+        return task;
     }
 
     // Функция 2
@@ -114,6 +118,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteAll() {
         if (isEmptyCheck()) return;
         taskList.clear();
+        historyManager.clearHistory();
         System.out.println("Все задачи удалены!");
     }
 
@@ -124,7 +129,7 @@ public class InMemoryTaskManager implements TaskManager {
         System.out.println("Получение по идентификатору");
         Task task = selector();
         if (task != null) {
-            historyManager.add(displaySingleTask(task, typeChecker(task), ""));
+            historyManager.addTaskToHistory(displayAndGetTask(task, typeChecker(task), false));
         }
     }
 
@@ -139,10 +144,10 @@ public class InMemoryTaskManager implements TaskManager {
             String command = scanner.next();
             switch (command) {
                 case "1":
-                    taskList.put(++id, taskCreator(id, ""));
+                    taskList.put(++id, taskCreator(id, false));
                     return;
                 case "2":
-                    taskList.put(++id, epicCreator(id, ""));
+                    taskList.put(++id, epicCreator(id, false));
                     return;
                 case "0":
                     System.out.println("Выход");
@@ -154,7 +159,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // создание задачи
-    public Task taskCreator(int taskId, String isNew) {
+    public Task taskCreator(int taskId, boolean newCheck) {
+        String isNew = (newCheck) ? " новое" : "";
         System.out.println("Введите" + isNew + " название задачи:");
         String taskName = scanner.next();
         System.out.println("Введите" + isNew + " описание задачи:");
@@ -163,7 +169,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // создание эпика
-    public Epic epicCreator(int epicId, String isNew) {
+    public Epic epicCreator(int epicId, boolean newCheck) {
+        String isNew = (newCheck) ? " новое" : "";
         System.out.println("Введите" + isNew + " название эпика:");
         String epicName = scanner.next();
         System.out.println("Введите" + isNew + " описание эпика:");
@@ -172,14 +179,15 @@ public class InMemoryTaskManager implements TaskManager {
         System.out.println("Сколько подзадач вы желаете добавить?");
         int subTasksCount = scanner.nextInt();
         for (int i = 1; i <= subTasksCount; i++) {
-            Subtask newSubtask = subTaskCreator(++id, i, "");
-            newEpic.subtasks.put(newSubtask.id, newSubtask);
+            Subtask newSubtask = subTaskCreator(++id, i, false);
+            newEpic.subtasks.put(id, newSubtask);
         }
         return newEpic;
     }
 
     // создание подзадачи
-    public Subtask subTaskCreator(int subTaskId, int count, String isNew) {
+    public Subtask subTaskCreator(int subTaskId, int count, boolean newCheck) {
+        String isNew = (newCheck) ? " новое" : "";
         System.out.println("Подзадача " + count);
         System.out.println("Введите" + isNew + " название подзадачи:");
         String subTaskName = scanner.next();
@@ -196,23 +204,23 @@ public class InMemoryTaskManager implements TaskManager {
         while (true) {
             System.out.println("Выберите старую задачу, которую желаете обновить.");
             Task oldTask = selector();
-
-            if (oldTask == null) {
-                return;
-            } else if (oldTask instanceof Subtask) {
+            if (oldTask instanceof Subtask) {
                 for (Task task : taskList.values()) {
                     if (task instanceof Epic epic && epic.subtasks.containsValue(oldTask)) {
-                        Subtask newSubtask = subTaskCreator(oldTask.id, 1, " новое");
+                        Subtask newSubtask = subTaskCreator(oldTask.id, 1, true);
                         epic.subtasks.replace(oldTask.id, epic.subtasks.get(oldTask.id), newSubtask);
-                        return;
+                        break;
                     }
                 }
-            } else if (oldTask instanceof Epic) {
-                taskList.replace(oldTask.id, taskList.get(oldTask.id), epicCreator(oldTask.id, " новое"));
-                return;
+            } else if (oldTask != null) {
+                if (oldTask instanceof Epic) {
+                    taskList.replace(oldTask.id, taskList.get(oldTask.id), epicCreator(oldTask.id, true));
+                } else {
+                    taskList.replace(oldTask.id, taskList.get(oldTask.id), taskCreator(oldTask.id, true));
+                    break;
+                }
             } else {
-                taskList.replace(oldTask.id, taskList.get(oldTask.id), taskCreator(oldTask.id, " новое"));
-                return;
+                break;
             }
         }
     }
@@ -230,20 +238,16 @@ public class InMemoryTaskManager implements TaskManager {
                 System.out.println("1 - Новый");
                 System.out.println("2 - В процессе");
                 System.out.println("3 - Выполнен");
-                System.out.println("0 - выход");
                 String newStatus = scanner.next();
                 switch (newStatus) {
                     case "1":
-                        task.setStatus(Status.NEW);
-                        System.out.println("Обновление статуса " + typeChecker(task) + " успешно выполнено!");
+                        task.setStatus(Status.NEW, type);
                         return;
                     case "2":
-                        task.setStatus(Status.IN_PROGRESS);
-                        System.out.println("Обновление статуса " + typeChecker(task) + " успешно выполнено!");
+                        task.setStatus(Status.IN_PROGRESS, type);
                         return;
                     case "3":
-                        task.setStatus(Status.DONE);
-                        System.out.println("Обновление статуса " + typeChecker(task) + " успешно выполнено!");
+                        task.setStatus(Status.DONE, type);
                         return;
                     case "0":
                         System.out.println("Выход");
@@ -266,12 +270,19 @@ public class InMemoryTaskManager implements TaskManager {
             for (Task task1 : taskList.values()) {
                 if (task1 instanceof Epic epic && epic.subtasks.containsValue(task)) {
                     epic.subtasks.remove(task.id);
-                    System.out.println("Удаление " + typeChecker(task) + " успешно выполнено!");
                 }
             }
         } else if (task != null) {
+            if (task instanceof Epic epic) {
+                for (Subtask subtask : epic.subtasks.values()) {
+                    historyManager.removeTaskInHistory(subtask.id);
+                }
+            }
             taskList.remove(task.id);
-            System.out.println("Удаление " + typeChecker(task) + " успешно выполнено!");
+        } else {
+            return;
         }
+        historyManager.removeTaskInHistory(task.id);
+        System.out.println("Удаление " + typeChecker(task) + " успешно выполнено!");
     }
 }
